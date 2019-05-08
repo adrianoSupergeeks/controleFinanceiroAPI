@@ -3,67 +3,107 @@ require 'rails_helper'
 RSpec.describe 'Users API', type: :request do
     let!(:user) { create(:user) }
     let(:user_id) { user.id }
-    
+    let(:headers){ { "Accept" => "application/vnd.projetofase8.v1" } }
     before { host! "localhost:3000/api" }
-    
+
     describe "GET user/:id" do
-        
-        before do
-            headers = { "Accept" => "application/vnd.projetofase8.v1" }
+
+        before do 
             get "/users/#{user_id}", params: {}, headers: headers
         end
-        
-        context "quando o usuario existir" do
-            it "retorna o usuario" do
-                user_response = JSON.parse(response.body)
-                expect(user_response["id"]).to eq(user_id)
+
+        context "when the user exists" do
+            it "returns the user" do
+                expect(json_body["id"]).to eq(user_id)
             end
-            it "retorna codigo de status 200" do
+            it "returns status code 200" do
                 expect(response).to have_http_status(200) 
             end
         end
-        
-        context "Quando o usuario não existir" do
+
+        context "when the user does not exists" do
             let(:user_id) { 10000 }
-            
-            it "retorna codigo de status 404" do
+
+            it "returns status code 404" do
                 expect(response).to have_http_status(404)
             end
         end
-        
+
     end
-    
+
     describe "Post user/" do
-        
-        before do
-            headers = { "Accept" => "application/vnd.projetofase8.v1" }
+
+        before do 
             post "/users", params: { user: user_params }, headers: headers
         end 
-        
-        context "quando a requisicao eh valida" do
+
+        context "when the request params are valid" do
             let(:user_params) { attributes_for(:user) }
-            
-            it "retorna codigo de status 201" do
+
+            it "returns status conde 201" do
                 expect(response).to have_http_status(201) 
             end
-            
-            it "retorna o json para o usuario criado" do
-                user_response = JSON.parse(response.body)
-                expect(user_response['email']).to eq(user_params[:email])
+
+            it "returns json data for the created user" do
+                expect(json_body['email']).to eq(user_params[:email])
             end
         end
-        
-        context "quando a requisicao eh invalida" do
+
+        context "when the request params are invalid" do
             let(:user_params) { attributes_for(:user, email: "email_invalido@") }
-            
-            it "retorna codigo de status 422" do
+
+            it "returns status conde 422" do
                 expect(response).to have_http_status(422) 
             end
-            
-            it "retorna o jsonpara os erros" do
-                user_response = JSON.parse(response.body)
-                expect(user_response).to have_key('errors')
+
+            it "returns json data for the errors" do
+                expect(json_body).to have_key('errors')
             end
+        end
+    end
+
+    describe "PUT user/:id" do
+
+        before do
+            put "/users/#{user_id}", params: { user: user_params}, headers: headers
+        end
+
+        context "when the request params are valid" do
+            let(:user_params){ { email: 'novo@email.com' } }
+
+            it "return status code 200" do
+                expect(response).to have_http_status(200) 
+            end
+
+            it "returns json data for the update user" do
+                expect(json_body['email']).to eq(user_params[:email])
+            end
+        end
+
+        context "when the request params are invalid" do
+            let(:user_params){ { email: 'email_invalido@' } }
+
+            it "returns status code 422" do
+                expect(response).to have_http_status(422)
+            end
+
+            it "returns json data for the errors" do
+                expect(json_body).to have_key('errors')
+            end
+        end
+    end
+
+    describe "DELETE user/:id" do
+        before do
+            delete "/users/#{user_id}", params: {}, headers: headers
+        end
+
+        it "return status code 204" do
+            expect(response).to have_http_status(204) 
+        end
+
+        it "remove the user from data base" do
+            expect(User.find_by(id: user.id)).to be_nil
         end
     end
 end
