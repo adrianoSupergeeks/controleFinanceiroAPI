@@ -12,6 +12,7 @@ gem 'ransack'
 gem 'omniauth'
 gem 'devise_token_auth'
 gem 'rack-cors'
+gem 'rails-i18n', '~>5.0.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.2'

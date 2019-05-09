@@ -5,5 +5,9 @@ class Api::V2::ExpenseSerializer < ActiveModel::Serializer
         Date.current > object.date if object.date.present?
     end
     
+    def date_to_br
+        I18n.l(object.date, format: :databr) if object.date.present?
+    end
+    
     belongs_to :user
 end
